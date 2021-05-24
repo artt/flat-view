@@ -23,6 +23,10 @@ function getURL(relativePath) {
 }
 
 app.post('/scan', function (req, res) {
+  if (req.body.dir[0] === "~") {
+    const homedir = require('os').homedir();
+    req.body.dir = path.join(homedir, req.body.dir.substring(1))
+  }
   glob(path.join(req.body.dir, '**', '*.md'))
     .then(files => {
       return files.map(file => {
@@ -32,7 +36,7 @@ app.post('/scan', function (req, res) {
             const m = matter(data)
             tmp = {
               ...m.data,
-              content: m.content,
+              body: m.content,
               file: relPath,
               url: getURL(relPath),
             }

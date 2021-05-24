@@ -7,6 +7,7 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 
 import {AgGridColumn, AgGridReact} from 'ag-grid-react';
+import 'ag-grid-enterprise';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-alpine-dark.css';
 
@@ -18,7 +19,7 @@ const theme = createMuiTheme({
 
 function App() {
 
-  const [directory, setDirectory] = React.useState('/Users/art/GitHub/pier-source/content/members/jaree-pinthong')
+  const [directory, setDirectory] = React.useState('~/GitHub/pier-source/content/members')
   const [tableData, setTableData] = React.useState([])
 
   function convertObject(o) {
@@ -65,6 +66,13 @@ function App() {
   const defaultColDef = {
     editable: true,
   };
+
+  const columnTypes = {
+    // paragraph: {
+    //   wrapText: true,
+    //   autoHeight: true,
+    // }
+  };
   
   return (
     <ThemeProvider theme={theme}>
@@ -75,11 +83,18 @@ function App() {
             <Button variant="contained" onClick={() => scan(directory)}>Scan</Button>
           </div>
           <div className="ag-theme-alpine-dark" style={{height: 400, width: "80vw"}}>
-            <AgGridReact rowData={tableData} defaultColDef={defaultColDef}>
-              {Object.keys(tableData[0]).map(k => {
-                console.log(k)
-                return <AgGridColumn field={k} />
-              })} 
+            <AgGridReact
+              rowData={tableData}
+              defaultColDef={defaultColDef}
+              enableRangeSelection={true}
+              columnTypes={columnTypes}
+            >
+              {tableData && tableData.length > 0 &&
+                Object.keys(tableData[0]).map(k => {
+                  console.log(k)
+                  return <AgGridColumn field={k} type={k.substring(0, 4) === "body" && "paragraph"} />
+                })
+              }
             </AgGridReact>
           </div>
         </header>
