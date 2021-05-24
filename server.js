@@ -9,22 +9,49 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+function getURL(relativePath) {
+  parsed = path.parse(relativePath)
+  let url = parsed.dir
+  let variant = ''
+  if (parsed.base.substring(0, 6) !== "index.") {
+    url = path.join(url, parsed.name)
+  }
+  else {
+    variant = parsed.name.substring(6)
+  }
+  return {main: url, variant: variant}
+}
+
 app.post('/scan', function (req, res) {
   glob(path.join(req.body.dir, '**', '*.md'))
     .then(files => {
-      return files.map(file =>
-        fs.readFile(file)
+      return files.map(file => {
+        const relPath = "/" + path.relative(req.body.dir, file)
+        return fs.readFile(file)
           .then(data => {
-            let tmp = matter(data)
-            tmp.file = path.relative(req.body.dir, file)
+            const m = matter(data)
+            tmp = {
+              ...m.data,
+              content: m.content,
+              file: relPath,
+              url: getURL(relPath),
+            }
             return tmp
           })
-      )
+      })
     })
     .then(allFiles => Promise.all(allFiles))
-    .then(x => {
-      console.log('++', x)
-      res.json(x)
+    .then(xs => {
+      // merge stuff that should be merged (duh)
+      let all = {}
+      xs.map(x => {
+        if (!(x.url.main in all)) {
+          all[x.url.main] = {}
+        }
+        all[x.url.main][x.url.variant || "default"] = x
+        delete all[x.url.main][x.url.variant || "default"].url
+      })
+      res.json(all)
     })
 
 });
