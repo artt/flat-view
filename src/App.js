@@ -53,7 +53,10 @@ function App() {
                 }
               })
               console.log(objectArray)
-              setTableData(objectArray)
+              setTableData(objectArray.map(x => ({date: x.date, id: x.id, title: x.title})))
+              // setTableData(objectArray.map(x => ({name: x.title_th, email: x.email_th})))
+              // setTableData(objectArray.map(x => ({en: x.title_en, th: x.title_th})))
+              // setTableData(objectArray)
             })
         }
         else {
